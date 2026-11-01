@@ -10,6 +10,10 @@ jobs:
   deploy:
     name: Vercel Automated Deployment
     runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -32,14 +36,11 @@ jobs:
           npm run build
 
       - name: Install Vercel CLI
+        if: env.VERCEL_TOKEN != ''
         run: npm install --global vercel@latest
 
       - name: Pull Vercel Environment Information (Preview / Production)
-        if: ${{ secrets.VERCEL_TOKEN != '' }}
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        if: env.VERCEL_TOKEN != ''
         run: |
           if [ "${{ github.event_name }}" = "push" ]; then
             vercel pull --yes --environment=production --token=$VERCEL_TOKEN
@@ -48,11 +49,7 @@ jobs:
           fi
 
       - name: Deploy to Vercel
-        if: ${{ secrets.VERCEL_TOKEN != '' }}
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        if: env.VERCEL_TOKEN != ''
         run: |
           if [ "${{ github.event_name }}" = "push" ]; then
             vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN
