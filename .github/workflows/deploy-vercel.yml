@@ -19,7 +19,7 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-          cache-dependency-path: apps/web/package.json
+          cache-dependency-path: apps/web/package-lock.json
 
       - name: Install Dependencies
         run: |
@@ -35,7 +35,7 @@ jobs:
         run: npm install --global vercel@latest
 
       - name: Pull Vercel Environment Information (Preview / Production)
-        if: env.VERCEL_TOKEN != ''
+        if: ${{ secrets.VERCEL_TOKEN != '' }}
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
@@ -48,7 +48,7 @@ jobs:
           fi
 
       - name: Deploy to Vercel
-        if: env.VERCEL_TOKEN != ''
+        if: ${{ secrets.VERCEL_TOKEN != '' }}
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
