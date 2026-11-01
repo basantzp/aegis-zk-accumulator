@@ -1,0 +1,36 @@
+# C Build artifacts
+core-c/build/
+*.o
+*.a
+*.so
+*.dylib
+*.out
+
+# Foundry & Solidity
+contracts/out/
+contracts/cache/
+broadcast/
+
+# Node.js & Web Client
+apps/web/node_modules/
+apps/web/dist/
+apps/web/.vercel/
+.vercel/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment & Secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store

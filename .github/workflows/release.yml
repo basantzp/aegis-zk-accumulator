@@ -1,0 +1,31 @@
+name: Release Engine Binaries
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release-binaries:
+    name: Build & Release C Binaries
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Build Tools
+        run: sudo apt-get update && sudo apt-get install -y gcc clang make
+
+      - name: Compile Release Artifacts
+        run: |
+          cd core-c
+          make clean
+          make all
+          tar -czvf ../aegis-linux-x86_64.tar.gz -C build libaegis.a libaegis.so aegis-cli
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: aegis-linux-x86_64.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

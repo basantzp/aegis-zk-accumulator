@@ -1,0 +1,28 @@
+name: "💡 Feature Request"
+description: Propose a new cryptographic primitive, precompile integration, or optimization
+title: "[FEAT]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Propose a new feature, gas optimization, or cryptographic accumulator capability.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: Is your feature request related to a specific limitation or rollup architecture?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed Solution / Architectural Design
+      description: Detailed specification of the proposed C / Solidity implementation.
+    validations:
+      required: true
+  - type: textarea
+    id: gas_impact
+    attributes:
+      label: Expected Gas / Throughput Impact
+      description: Rough estimation of performance improvement or on-chain savings.

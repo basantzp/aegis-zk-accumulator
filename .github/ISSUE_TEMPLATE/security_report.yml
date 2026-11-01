@@ -1,0 +1,28 @@
+name: "🔒 Security Vulnerability"
+description: Report a cryptographic weakness, double-spend, or memory corruption vulnerability
+title: "[SECURITY]: "
+labels: ["security", "critical"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **DO NOT disclose exploitable vulnerabilities publicly.**
+        Please follow responsible disclosure guidelines defined in `SECURITY.md`.
+  - type: textarea
+    id: severity
+    attributes:
+      label: Severity Assessment
+      description: Critical / High / Medium / Low
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Vulnerability Details & Attack Vector
+      description: Detail the cryptographic or implementation flaw (e.g., bitflips, reentrancy, buffer overflow).
+    validations:
+      required: true
+  - type: textarea
+    id: mitigation
+    attributes:
+      label: Proposed Mitigation / Patch
