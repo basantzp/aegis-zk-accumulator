@@ -7,8 +7,8 @@
 #ifndef AEGIS_PRECOMPILE_H
 #define AEGIS_PRECOMPILE_H
 
-#include "aegis_types.h"
 #include "aegis_smt.h"
+#include "aegis_types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -44,24 +44,16 @@ extern "C" {
  * @param gas_cost Pointer to write calculated gas cost
  * @return 0 on success (evaluation completed), non-zero on malformed input
  */
-int aegis_precompile_eval(const uint8_t *input,
-                          size_t input_len,
-                          uint8_t *output,
-                          size_t max_output_len,
-                          size_t *actual_output_len,
-                          uint64_t *gas_cost);
+int aegis_precompile_eval(const uint8_t *input, size_t input_len, uint8_t *output, size_t max_output_len,
+                          size_t *actual_output_len, uint64_t *gas_cost);
 
 /**
  * @brief Encode proof and parameters into standard EVM ABI calldata for Solidity function call:
  * verifyProof(bytes32 root, bytes32 key, bytes32 value, bytes32[] siblings)
  */
-aegis_status_t aegis_encode_solidity_calldata(const uint8_t root[AEGIS_WORD_SIZE],
-                                              const uint8_t key[AEGIS_WORD_SIZE],
-                                              const uint8_t value[AEGIS_WORD_SIZE],
-                                              const aegis_smt_proof_t *proof,
-                                              uint8_t *out_buf,
-                                              size_t buf_capacity,
-                                              size_t *out_len);
+aegis_status_t aegis_encode_solidity_calldata(const uint8_t root[AEGIS_WORD_SIZE], const uint8_t key[AEGIS_WORD_SIZE],
+                                              const uint8_t value[AEGIS_WORD_SIZE], const aegis_smt_proof_t *proof,
+                                              uint8_t *out_buf, size_t buf_capacity, size_t *out_len);
 
 #ifdef __cplusplus
 }

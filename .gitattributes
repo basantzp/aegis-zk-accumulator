@@ -1,0 +1,17 @@
+# GitHub Linguist Language Classification Overrides
+# Ensures repository language breakdown reflects pure Solidity and C
+apps/web/* linguist-documentation
+apps/web/**/* linguist-documentation
+*.html linguist-documentation
+*.json linguist-documentation
+*.css linguist-documentation
+*.svg linguist-documentation
+contracts/lib/**/* linguist-vendored
+core-c/build/* linguist-vendored
+
+# Line endings
+* text=auto eol=lf
+*.c text eol=lf
+*.h text eol=lf
+*.sol text eol=lf
+*.md text eol=lf

@@ -43,6 +43,9 @@ bench: dirs $(LIB_STATIC)
 
 asan: clean dirs
 	$(CC) -Wall -Wextra -pedantic -std=c11 -g -fsanitize=address,undefined -D_POSIX_C_SOURCE=199309L $(INCLUDES) \
+		$(SRCS) tests/test_hash.c -o $(BUILD_DIR)/test_hash_asan
+	$(BUILD_DIR)/test_hash_asan
+	$(CC) -Wall -Wextra -pedantic -std=c11 -g -fsanitize=address,undefined -D_POSIX_C_SOURCE=199309L $(INCLUDES) \
 		$(SRCS) tests/test_smt.c -o $(BUILD_DIR)/test_smt_asan
 	$(BUILD_DIR)/test_smt_asan
 

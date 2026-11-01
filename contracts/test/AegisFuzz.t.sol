@@ -42,13 +42,10 @@ contract AegisFuzzTest is Test {
     }
 
     /// @notice Property: Flipping any bit in a sibling hash guarantees verification failure
-    function testFuzz_BitFlipBreaksVerification(
-        bytes32 key,
-        bytes32 val,
-        bytes32 sib0,
-        bytes32 sib1,
-        uint8 bitToFlip
-    ) public view {
+    function testFuzz_BitFlipBreaksVerification(bytes32 key, bytes32 val, bytes32 sib0, bytes32 sib1, uint8 bitToFlip)
+        public
+        view
+    {
         vm.assume(val != bytes32(0));
         bitToFlip = uint8(bound(bitToFlip, 0, 255));
 
@@ -67,8 +64,7 @@ contract AegisFuzzTest is Test {
 
         // Invariant: corrupted proof MUST fail
         assertFalse(
-            accumulator.verifyProof(validRoot, key, val, siblings),
-            "Corrupted proof unexpectedly passed verification"
+            accumulator.verifyProof(validRoot, key, val, siblings), "Corrupted proof unexpectedly passed verification"
         );
     }
 }

@@ -22,12 +22,7 @@ interface IAegisVault {
      * @param amount Amount transferred in wei.
      * @param nullifier Cryptographic nullifier consumed to prevent double-spending.
      */
-    event Withdrawn(
-        address indexed recipient,
-        bytes32 indexed accountId,
-        uint256 amount,
-        bytes32 indexed nullifier
-    );
+    event Withdrawn(address indexed recipient, bytes32 indexed accountId, uint256 amount, bytes32 indexed nullifier);
 
     /**
      * @notice Deposit ETH into the vault for a designated off-chain account.
@@ -43,13 +38,8 @@ interface IAegisVault {
      * @param nullifier Unique random nullifier.
      * @param proof Sibling Merkle path.
      */
-    function withdraw(
-        bytes32 root,
-        bytes32 accountId,
-        uint256 amount,
-        bytes32 nullifier,
-        bytes32[] calldata proof
-    ) external;
+    function withdraw(bytes32 root, bytes32 accountId, uint256 amount, bytes32 nullifier, bytes32[] calldata proof)
+        external;
 
     /**
      * @notice Check if a nullifier has already been consumed.

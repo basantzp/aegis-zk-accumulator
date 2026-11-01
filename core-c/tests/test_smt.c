@@ -3,12 +3,12 @@
  * @brief Unit tests for Sparse Merkle Tree (SMT), proof generation, and precompile evaluation.
  */
 
-#include "aegis_smt.h"
 #include "aegis_precompile.h"
+#include "aegis_smt.h"
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 static void test_empty_tree_root(void) {
     aegis_smt_t *tree = NULL;
@@ -133,8 +133,10 @@ static void test_precompile_evaluator(void) {
     aegis_status_t s = aegis_smt_create(&tree, 8);
     assert(s == AEGIS_SUCCESS);
 
-    uint8_t key[32] = {0}; key[31] = 0x42;
-    uint8_t value[32] = {0}; value[31] = 0x99;
+    uint8_t key[32] = {0};
+    key[31] = 0x42;
+    uint8_t value[32] = {0};
+    value[31] = 0x99;
     s = aegis_smt_insert(tree, key, value);
     assert(s == AEGIS_SUCCESS);
 
@@ -202,6 +204,76 @@ static void test_solidity_calldata_encoder(void) {
     printf("[TEST] Solidity ABI calldata encoder output verified (%zu bytes)!\n", out_len);
 }
 
+static void test_depth_256_full_tree(void) {
+    aegis_smt_t *tree = NULL;
+    aegis_status_t s = aegis_smt_create(&tree, 256);
+    assert(s == AEGIS_SUCCESS);
+
+    uint8_t key[32] = {0};
+    key[0] = 0x80;  /* MSB set */
+    key[31] = 0x01; /* LSB set */
+
+    uint8_t value[32] = {0};
+    value[0] = 0x12;
+    value[31] = 0x34;
+
+    s = aegis_smt_insert(tree, key, value);
+    assert(s == AEGIS_SUCCESS);
+    assert(aegis_smt_leaf_count(tree) == 1);
+
+    uint8_t root[32];
+    s = aegis_smt_get_root(tree, root);
+    assert(s == AEGIS_SUCCESS);
+
+    aegis_smt_proof_t proof;
+    s = aegis_smt_generate_proof(tree, key, &proof);
+    assert(s == AEGIS_SUCCESS);
+    assert(proof.depth == 256);
+
+    s = aegis_smt_verify_proof(root, key, value, &proof);
+    assert(s == AEGIS_SUCCESS);
+
+    /* Tampering leaf value must fail verification */
+    uint8_t bad_value[32];
+    memcpy(bad_value, value, 32);
+    bad_value[31] ^= 0x01;
+    s = aegis_smt_verify_proof(root, key, bad_value, &proof);
+    assert(s == AEGIS_ERR_VERIFY_FAILED);
+
+    printf("[TEST] Full 256-level depth SMT insertion, proof generation, and verification verified!\n");
+    aegis_smt_free(tree);
+}
+
+static void test_precompile_depth_overflow_attack(void) {
+    /* Test attack where upper 28 bytes of uint256 depth word are non-zero (truncation bypass attempt) */
+    size_t calldata_len = 128 + 8 * 32;
+    uint8_t *calldata = (uint8_t *)calloc(1, calldata_len);
+    assert(calldata != NULL);
+
+    /* Lower 4 bytes say depth = 8 */
+    calldata[127] = 8;
+    /* Upper bytes have non-zero value: 1 << 64 */
+    calldata[100] = 0x01;
+
+    uint8_t out[32];
+    size_t actual_out_len = 0;
+    uint64_t gas_cost = 0;
+    int res = aegis_precompile_eval(calldata, calldata_len, out, 32, &actual_out_len, &gas_cost);
+    assert(res == 0);
+    assert(out[31] == 0x00); /* Must reject with 0 */
+
+    /* Also test depth > 256 (e.g. depth = 257) */
+    memset(calldata + 96, 0, 32);
+    calldata[126] = 0x01;
+    calldata[127] = 0x01; /* 257 */
+    res = aegis_precompile_eval(calldata, calldata_len, out, 32, &actual_out_len, &gas_cost);
+    assert(res == 0);
+    assert(out[31] == 0x00); /* Must reject with 0 */
+
+    free(calldata);
+    printf("[TEST] Precompile uint256 depth truncation attack and depth bounds correctly rejected!\n");
+}
+
 int main(void) {
     printf("=== Aegis SMT & Precompile Test Suite ===\n");
     test_empty_tree_root();
@@ -209,6 +281,8 @@ int main(void) {
     test_multiple_leaves();
     test_precompile_evaluator();
     test_solidity_calldata_encoder();
+    test_depth_256_full_tree();
+    test_precompile_depth_overflow_attack();
     printf("=== ALL SMT TESTS PASSED ===\n");
     return 0;
 }

@@ -18,7 +18,7 @@ contract AegisVaultTest is Test {
     address public mallory = address(0xCCCC);
 
     bytes32 public constant ACCOUNT_ID = 0x0000000000000000000000000000000000000000000000000000000000000042;
-    bytes32 public constant NULLIFIER  = 0x9999000000000000000000000000000000000000000000000000000000000001;
+    bytes32 public constant NULLIFIER = 0x9999000000000000000000000000000000000000000000000000000000000001;
     uint256 public constant WITHDRAW_AMOUNT = 2 ether;
 
     bytes32 public validRoot;
@@ -135,5 +135,57 @@ contract AegisVaultTest is Test {
         vm.prank(bob);
         vm.expectRevert(AegisVault.VaultPaused.selector);
         vault.withdraw(validRoot, ACCOUNT_ID, WITHDRAW_AMOUNT, NULLIFIER, proofSiblings);
+    }
+
+    function test_Vault_TwoStepOwnershipTransfer() public {
+        address newOwner = address(0x7777);
+
+        vm.prank(owner);
+        vault.transferOwnership(newOwner);
+        assertEq(vault.pendingOwner(), newOwner);
+        assertEq(vault.owner(), owner);
+
+        // Attacker fails to accept
+        vm.prank(mallory);
+        vm.expectRevert(AegisVault.Unauthorized.selector);
+        vault.acceptOwnership();
+
+        // New owner accepts
+        vm.prank(newOwner);
+        vault.acceptOwnership();
+        assertEq(vault.owner(), newOwner);
+        assertEq(vault.pendingOwner(), address(0));
+    }
+
+    function test_Vault_Receive_Success() public {
+        uint256 startBal = address(vault).balance;
+        vm.prank(alice);
+        (bool success,) = address(vault).call{value: 1 ether}("");
+        assertTrue(success);
+        assertEq(address(vault).balance, startBal + 1 ether);
+    }
+
+    function test_Vault_Receive_ZeroReverts() public {
+        vm.prank(alice);
+        (bool success,) = address(vault).call{value: 0}("");
+        assertFalse(success);
+    }
+
+    function test_Vault_Receive_PausedReverts() public {
+        vm.prank(owner);
+        vault.setPaused(true);
+
+        vm.prank(alice);
+        (bool success,) = address(vault).call{value: 1 ether}("");
+        assertFalse(success);
+    }
+
+    function test_Vault_EmergencyDrain_EventAndSuccess() public {
+        uint256 ownerInitial = owner.balance;
+        vm.prank(owner);
+        vm.expectEmit(true, false, false, true);
+        emit AegisVault.EmergencyDrained(owner, 1 ether);
+        vault.emergencyDrain(owner, 1 ether);
+        assertEq(owner.balance, ownerInitial + 1 ether);
     }
 }

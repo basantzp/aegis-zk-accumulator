@@ -5,9 +5,10 @@
  */
 
 #include "aegis_crypto.h"
-#include <string.h>
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define KECCAK_ROUNDS 24
 #define KECCAK_RATE_BYTES 136 /* (1600 - 512) / 8 */
@@ -18,33 +19,19 @@ static inline uint64_t rotl64(uint64_t x, unsigned int n) {
 
 /* Keccak Round Constants */
 static const uint64_t RC[KECCAK_ROUNDS] = {
-    0x0000000000000001ULL, 0x0000000000008082ULL, 0x800000000000808aULL,
-    0x8000000080008000ULL, 0x000000000000808bULL, 0x0000000080000001ULL,
-    0x8000000080008081ULL, 0x8000000000008009ULL, 0x000000000000008aULL,
-    0x0000000000000088ULL, 0x0000000080008009ULL, 0x000000008000000aULL,
-    0x000000008000808bULL, 0x800000000000008bULL, 0x8000000000008089ULL,
-    0x8000000000008003ULL, 0x8000000000008002ULL, 0x8000000000000080ULL,
-    0x000000000000800aULL, 0x800000008000000aULL, 0x8000000080008081ULL,
-    0x8000000000008080ULL, 0x0000000080000001ULL, 0x8000000080008008ULL
-};
+    0x0000000000000001ULL, 0x0000000000008082ULL, 0x800000000000808aULL, 0x8000000080008000ULL, 0x000000000000808bULL,
+    0x0000000080000001ULL, 0x8000000080008081ULL, 0x8000000000008009ULL, 0x000000000000008aULL, 0x0000000000000088ULL,
+    0x0000000080008009ULL, 0x000000008000000aULL, 0x000000008000808bULL, 0x800000000000008bULL, 0x8000000000008089ULL,
+    0x8000000000008003ULL, 0x8000000000008002ULL, 0x8000000000000080ULL, 0x000000000000800aULL, 0x800000008000000aULL,
+    0x8000000080008081ULL, 0x8000000000008080ULL, 0x0000000080000001ULL, 0x8000000080008008ULL};
 
 /* Keccak Rho rotation offsets */
-static const unsigned int RHO_OFFSETS[25] = {
-     0,  1, 62, 28, 27,
-    36, 44,  6, 55, 20,
-     3, 10, 43, 25, 39,
-    41, 45, 15, 21,  8,
-    18,  2, 61, 56, 14
-};
+static const unsigned int RHO_OFFSETS[25] = {0,  1,  62, 28, 27, 36, 44, 6,  55, 20, 3,  10, 43,
+                                             25, 39, 41, 45, 15, 21, 8,  18, 2,  61, 56, 14};
 
 /* Keccak Pi permutation mapping */
-static const unsigned int PI_MAP[25] = {
-     0, 10, 20,  5, 15,
-    16,  1, 11, 21,  6,
-     7, 17,  2, 12, 22,
-    23,  8, 18,  3, 13,
-    14, 24,  9, 19,  4
-};
+static const unsigned int PI_MAP[25] = {0,  10, 20, 5, 15, 16, 1,  11, 21, 6, 7,  17, 2,
+                                        12, 22, 23, 8, 18, 3,  13, 14, 24, 9, 19, 4};
 
 static void keccak_f1600(uint64_t state[25]) {
     for (int round = 0; round < KECCAK_ROUNDS; round++) {
@@ -82,8 +69,10 @@ static void keccak_f1600(uint64_t state[25]) {
 }
 
 aegis_status_t aegis_keccak256(const uint8_t *msg, size_t msg_len, uint8_t out[AEGIS_WORD_SIZE]) {
-    if (!out) return AEGIS_ERR_NULL_PTR;
-    if (msg_len > 0 && !msg) return AEGIS_ERR_NULL_PTR;
+    if (!out)
+        return AEGIS_ERR_NULL_PTR;
+    if (msg_len > 0 && !msg)
+        return AEGIS_ERR_NULL_PTR;
 
     uint64_t state[25] = {0};
     size_t block_pos = 0;
@@ -126,10 +115,10 @@ aegis_status_t aegis_keccak256(const uint8_t *msg, size_t msg_len, uint8_t out[A
     return AEGIS_SUCCESS;
 }
 
-aegis_status_t aegis_hash_nodes(const uint8_t left[AEGIS_WORD_SIZE],
-                                const uint8_t right[AEGIS_WORD_SIZE],
+aegis_status_t aegis_hash_nodes(const uint8_t left[AEGIS_WORD_SIZE], const uint8_t right[AEGIS_WORD_SIZE],
                                 uint8_t out[AEGIS_WORD_SIZE]) {
-    if (!left || !right || !out) return AEGIS_ERR_NULL_PTR;
+    if (!left || !right || !out)
+        return AEGIS_ERR_NULL_PTR;
 
     /* Fast path: 64 bytes total input. Fits in single Keccak-256 block (136 bytes rate) */
     uint64_t state[25] = {0};
@@ -165,10 +154,10 @@ aegis_status_t aegis_hash_nodes(const uint8_t left[AEGIS_WORD_SIZE],
 
 /* Poseidon constants and sponge for BN254 scalar field */
 /* Simplified, deterministic algebraic permutation for ZK benchmarks */
-aegis_status_t aegis_poseidon_hash(const uint8_t left[AEGIS_WORD_SIZE],
-                                   const uint8_t right[AEGIS_WORD_SIZE],
+aegis_status_t aegis_poseidon_hash(const uint8_t left[AEGIS_WORD_SIZE], const uint8_t right[AEGIS_WORD_SIZE],
                                    uint8_t out[AEGIS_WORD_SIZE]) {
-    if (!left || !right || !out) return AEGIS_ERR_NULL_PTR;
+    if (!left || !right || !out)
+        return AEGIS_ERR_NULL_PTR;
 
     /* High-efficiency Poseidon sponge permutation */
     uint64_t s[4] = {0};
@@ -188,7 +177,10 @@ aegis_status_t aegis_poseidon_hash(const uint8_t left[AEGIS_WORD_SIZE],
         uint64_t t1 = s[0] + s[1] + s[2] * 2 + s[3];
         uint64_t t2 = s[0] + s[1] + s[2] + s[3] * 2;
         uint64_t t3 = s[0] * 2 + s[1] + s[2] + s[3];
-        s[0] = t0; s[1] = t1; s[2] = t2; s[3] = t3;
+        s[0] = t0;
+        s[1] = t1;
+        s[2] = t2;
+        s[3] = t3;
     }
 
     memcpy(out, s, 32);
@@ -196,15 +188,18 @@ aegis_status_t aegis_poseidon_hash(const uint8_t left[AEGIS_WORD_SIZE],
 }
 
 bool aegis_bytes32_is_zero(const aegis_bytes32_t *b) {
-    if (!b) return true;
+    if (!b)
+        return true;
     for (int i = 0; i < AEGIS_WORD_SIZE; i++) {
-        if (b->data[i] != 0) return false;
+        if (b->data[i] != 0)
+            return false;
     }
     return true;
 }
 
 bool aegis_bytes32_equal(const aegis_bytes32_t *a, const aegis_bytes32_t *b) {
-    if (!a || !b) return false;
+    if (!a || !b)
+        return false;
     uint8_t diff = 0;
     for (int i = 0; i < AEGIS_WORD_SIZE; i++) {
         diff |= (a->data[i] ^ b->data[i]);
@@ -213,7 +208,8 @@ bool aegis_bytes32_equal(const aegis_bytes32_t *a, const aegis_bytes32_t *b) {
 }
 
 aegis_status_t aegis_hex_to_bytes(const char *hex_str, uint8_t *out, size_t out_len) {
-    if (!hex_str || !out) return AEGIS_ERR_NULL_PTR;
+    if (!hex_str || !out)
+        return AEGIS_ERR_NULL_PTR;
 
     if (hex_str[0] == '0' && (hex_str[1] == 'x' || hex_str[1] == 'X')) {
         hex_str += 2;
@@ -225,7 +221,12 @@ aegis_status_t aegis_hex_to_bytes(const char *hex_str, uint8_t *out, size_t out_
     }
 
     for (size_t i = 0; i < out_len; i++) {
-        char byte_str[3] = { hex_str[i * 2], hex_str[i * 2 + 1], '\0' };
+        char c1 = hex_str[i * 2];
+        char c2 = hex_str[i * 2 + 1];
+        if (!isxdigit((unsigned char)c1) || !isxdigit((unsigned char)c2)) {
+            return AEGIS_ERR_INVALID_FORMAT;
+        }
+        char byte_str[3] = {c1, c2, '\0'};
         char *endptr = NULL;
         unsigned long val = strtoul(byte_str, &endptr, 16);
         if (*endptr != '\0') {
@@ -238,7 +239,8 @@ aegis_status_t aegis_hex_to_bytes(const char *hex_str, uint8_t *out, size_t out_
 }
 
 aegis_status_t aegis_bytes_to_hex(const uint8_t *bytes, size_t len, char *out_hex) {
-    if (!bytes || !out_hex) return AEGIS_ERR_NULL_PTR;
+    if (!bytes || !out_hex)
+        return AEGIS_ERR_NULL_PTR;
 
     out_hex[0] = '0';
     out_hex[1] = 'x';

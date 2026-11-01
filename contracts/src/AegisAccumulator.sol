@@ -51,6 +51,7 @@ contract AegisAccumulator is IAegisAccumulator {
     error RootMismatch(bytes32 expected, bytes32 actual);
     error InvalidRoot();
     error InvalidBatchDimensions();
+    error IndexOutOfBounds(uint256 index, uint256 maxCapacity);
     error BatchVerificationFailed(uint256 index);
     error ZeroAddress();
 
@@ -76,6 +77,7 @@ contract AegisAccumulator is IAegisAccumulator {
      */
     constructor(bytes32 initialRoot, address initialSequencer) {
         if (initialSequencer == address(0)) revert ZeroAddress();
+        if (initialRoot == bytes32(0)) revert InvalidRoot();
 
         owner = msg.sender;
         sequencer = initialSequencer;
@@ -90,12 +92,12 @@ contract AegisAccumulator is IAegisAccumulator {
     /**
      * @inheritdoc IAegisAccumulator
      */
-    function verifyProof(
-        bytes32 root,
-        bytes32 key,
-        bytes32 value,
-        bytes32[] calldata siblings
-    ) external pure override returns (bool isValid) {
+    function verifyProof(bytes32 root, bytes32 key, bytes32 value, bytes32[] calldata siblings)
+        external
+        pure
+        override
+        returns (bool isValid)
+    {
         return AegisCryptoLib.verifyProofCalldata(root, key, value, siblings);
     }
 
@@ -113,11 +115,13 @@ contract AegisAccumulator is IAegisAccumulator {
             revert InvalidBatchDimensions();
         }
 
-        for (uint256 i = 0; i < count; ) {
+        for (uint256 i = 0; i < count;) {
             if (!AegisCryptoLib.verifyProofCalldata(root, keys[i], values[i], siblings[i])) {
                 return false;
             }
-            unchecked { ++i; }
+            unchecked {
+                ++i;
+            }
         }
 
         return true;
@@ -147,16 +151,18 @@ contract AegisAccumulator is IAegisAccumulator {
 
         // Verify state transition proofs against old root if provided
         uint256 numProofs = transitionKeys.length;
-        if (numProofs > 0) {
-            if (numProofs != transitionValues.length || numProofs != transitionProofs.length) {
-                revert InvalidBatchDimensions();
-            }
+        if (numProofs != transitionValues.length || numProofs != transitionProofs.length) {
+            revert InvalidBatchDimensions();
+        }
 
-            for (uint256 i = 0; i < numProofs; ) {
-                if (!AegisCryptoLib.verifyProofCalldata(expectedOldRoot, transitionKeys[i], transitionValues[i], transitionProofs[i])) {
-                    revert BatchVerificationFailed(i);
-                }
-                unchecked { ++i; }
+        for (uint256 i = 0; i < numProofs;) {
+            if (!AegisCryptoLib.verifyProofCalldata(
+                    expectedOldRoot, transitionKeys[i], transitionValues[i], transitionProofs[i]
+                )) {
+                revert BatchVerificationFailed(i);
+            }
+            unchecked {
+                ++i;
             }
         }
 
@@ -183,7 +189,7 @@ contract AegisAccumulator is IAegisAccumulator {
      * @param index Slot index in ring buffer (0 to 255).
      */
     function getHistoricalRootAt(uint256 index) external view returns (bytes32) {
-        if (index >= ROOT_HISTORY_CAPACITY) revert InvalidBatchDimensions();
+        if (index >= ROOT_HISTORY_CAPACITY) revert IndexOutOfBounds(index, ROOT_HISTORY_CAPACITY);
         return _historicalRoots[index];
     }
 
@@ -207,9 +213,10 @@ contract AegisAccumulator is IAegisAccumulator {
     function acceptOwnership() external {
         if (msg.sender != pendingOwner) revert Unauthorized();
         address old = owner;
-        owner = pendingOwner;
+        address newOwner = pendingOwner;
+        emit OwnershipTransferred(old, newOwner);
+        owner = newOwner;
         pendingOwner = address(0);
-        emit OwnershipTransferred(old, owner);
     }
 
     function setPaused(bool isPaused) external onlyOwner {

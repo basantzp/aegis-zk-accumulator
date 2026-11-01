@@ -6,8 +6,8 @@
 
 #define _POSIX_C_SOURCE 199309L
 
-#include "aegis_smt.h"
 #include "aegis_precompile.h"
+#include "aegis_smt.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -35,8 +35,8 @@ static void bench_keccak_hash(void) {
     double elapsed = get_elapsed_seconds(start, end);
     double ops_sec = (double)ITERATIONS / elapsed;
 
-    printf("[BENCHMARK] Keccak-256 (64-byte 2-to-1): %d ops in %.4f s -> %.2f ops/sec (%.2f ns/op)\n",
-           ITERATIONS, elapsed, ops_sec, (elapsed / ITERATIONS) * 1e9);
+    printf("[BENCHMARK] Keccak-256 (64-byte 2-to-1): %d ops in %.4f s -> %.2f ops/sec (%.2f ns/op)\n", ITERATIONS,
+           elapsed, ops_sec, (elapsed / ITERATIONS) * 1e9);
 }
 
 static void bench_poseidon_hash(void) {
@@ -57,8 +57,8 @@ static void bench_poseidon_hash(void) {
     double elapsed = get_elapsed_seconds(start, end);
     double ops_sec = (double)ITERATIONS / elapsed;
 
-    printf("[BENCHMARK] Poseidon BN254:            %d ops in %.4f s -> %.2f ops/sec (%.2f ns/op)\n",
-           ITERATIONS, elapsed, ops_sec, (elapsed / ITERATIONS) * 1e9);
+    printf("[BENCHMARK] Poseidon BN254:            %d ops in %.4f s -> %.2f ops/sec (%.2f ns/op)\n", ITERATIONS,
+           elapsed, ops_sec, (elapsed / ITERATIONS) * 1e9);
 }
 
 static void bench_smt_lifecycle(void) {
@@ -84,8 +84,8 @@ static void bench_smt_lifecycle(void) {
 
     clock_gettime(CLOCK_MONOTONIC, &end);
     double insert_elapsed = get_elapsed_seconds(start, end);
-    printf("[BENCHMARK] SMT-%d Insert:             %d leaves in %.4f s -> %.2f inserts/sec\n",
-           TREE_DEPTH, NUM_LEAVES, insert_elapsed, (double)NUM_LEAVES / insert_elapsed);
+    printf("[BENCHMARK] SMT-%d Insert:             %d leaves in %.4f s -> %.2f inserts/sec\n", TREE_DEPTH, NUM_LEAVES,
+           insert_elapsed, (double)NUM_LEAVES / insert_elapsed);
 
     uint8_t root[32];
     aegis_smt_get_root(tree, root);
@@ -102,12 +102,13 @@ static void bench_smt_lifecycle(void) {
     }
     clock_gettime(CLOCK_MONOTONIC, &end);
     double proof_gen_elapsed = get_elapsed_seconds(start, end);
-    printf("[BENCHMARK] SMT-%d Proof Generation:   %d proofs in %.4f s -> %.2f proofs/sec\n",
-           TREE_DEPTH, PROOF_SAMPLES, proof_gen_elapsed, (double)PROOF_SAMPLES / proof_gen_elapsed);
+    printf("[BENCHMARK] SMT-%d Proof Generation:   %d proofs in %.4f s -> %.2f proofs/sec\n", TREE_DEPTH, PROOF_SAMPLES,
+           proof_gen_elapsed, (double)PROOF_SAMPLES / proof_gen_elapsed);
 
     /* Benchmark In-Memory Proof Verification */
     const int VERIFY_SAMPLES = 200000;
-    key[2] = 0; key[3] = 42;
+    key[2] = 0;
+    key[3] = 42;
     value[31] = 43;
     aegis_smt_generate_proof(tree, key, &proof);
 
@@ -118,7 +119,8 @@ static void bench_smt_lifecycle(void) {
     clock_gettime(CLOCK_MONOTONIC, &end);
     double verify_elapsed = get_elapsed_seconds(start, end);
     printf("[BENCHMARK] SMT-%d Proof Verification: %d verifications in %.4f s -> %.2f verif/sec (%.2f ns/verif)\n",
-           TREE_DEPTH, VERIFY_SAMPLES, verify_elapsed, (double)VERIFY_SAMPLES / verify_elapsed, (verify_elapsed / VERIFY_SAMPLES) * 1e9);
+           TREE_DEPTH, VERIFY_SAMPLES, verify_elapsed, (double)VERIFY_SAMPLES / verify_elapsed,
+           (verify_elapsed / VERIFY_SAMPLES) * 1e9);
 
     aegis_smt_free(tree);
 }

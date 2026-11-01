@@ -4,22 +4,18 @@
  * @copyright (c) 2026 Aegis Project Contributors. Apache-2.0 / MIT.
  */
 
-#include "aegis_smt.h"
 #include "aegis_precompile.h"
+#include "aegis_smt.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 
 /* Selector for verifyProof(bytes32,bytes32,bytes32,bytes32[]) -> 0x532810b1 */
-static const uint8_t VERIFY_PROOF_SELECTOR[4] = { 0x53, 0x28, 0x10, 0xb1 };
+static const uint8_t VERIFY_PROOF_SELECTOR[4] = {0x53, 0x28, 0x10, 0xb1};
 
-aegis_status_t aegis_encode_solidity_calldata(const uint8_t root[AEGIS_WORD_SIZE],
-                                              const uint8_t key[AEGIS_WORD_SIZE],
-                                              const uint8_t value[AEGIS_WORD_SIZE],
-                                              const aegis_smt_proof_t *proof,
-                                              uint8_t *out_buf,
-                                              size_t buf_capacity,
-                                              size_t *out_len) {
+aegis_status_t aegis_encode_solidity_calldata(const uint8_t root[AEGIS_WORD_SIZE], const uint8_t key[AEGIS_WORD_SIZE],
+                                              const uint8_t value[AEGIS_WORD_SIZE], const aegis_smt_proof_t *proof,
+                                              uint8_t *out_buf, size_t buf_capacity, size_t *out_len) {
     if (!root || !key || !value || !proof || !out_buf || !out_len) {
         return AEGIS_ERR_NULL_PTR;
     }

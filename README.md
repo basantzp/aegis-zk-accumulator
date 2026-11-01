@@ -171,6 +171,9 @@ make bench
 
 # Export verified JSON test vector and Solidity ABI calldata
 ./core-c/build/aegis-cli --export-test-vector
+
+# Evaluate EVM precompile execution directly on raw calldata hex
+./core-c/build/aegis-cli --eval-precompile 0xf1c8...0000
 ```
 
 ### 5. Local Web Explorer

@@ -15,10 +15,7 @@ interface IAegisAccumulator {
      * @param timestamp Block timestamp of the state transition.
      */
     event StateRootUpdated(
-        bytes32 indexed previousRoot,
-        bytes32 indexed newRoot,
-        uint256 indexed batchId,
-        uint256 timestamp
+        bytes32 indexed previousRoot, bytes32 indexed newRoot, uint256 indexed batchId, uint256 timestamp
     );
 
     /**
@@ -29,12 +26,10 @@ interface IAegisAccumulator {
      * @param siblings Array of sibling hashes along the Merkle path.
      * @return isValid True if the proof cryptographically recalculates to root.
      */
-    function verifyProof(
-        bytes32 root,
-        bytes32 key,
-        bytes32 value,
-        bytes32[] calldata siblings
-    ) external pure returns (bool isValid);
+    function verifyProof(bytes32 root, bytes32 key, bytes32 value, bytes32[] calldata siblings)
+        external
+        pure
+        returns (bool isValid);
 
     /**
      * @notice Verifies multiple proofs in a single transaction with batched gas optimization.

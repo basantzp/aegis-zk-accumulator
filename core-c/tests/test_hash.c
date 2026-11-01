@@ -4,9 +4,9 @@
  */
 
 #include "aegis_crypto.h"
+#include <assert.h>
 #include <stdio.h>
 #include <string.h>
-#include <assert.h>
 
 static void test_keccak256_empty(void) {
     uint8_t out[32];

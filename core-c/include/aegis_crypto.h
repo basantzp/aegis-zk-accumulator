@@ -30,8 +30,7 @@ aegis_status_t aegis_keccak256(const uint8_t *msg, size_t msg_len, uint8_t out[A
  * @param out 32-byte parent node output buffer.
  * @return AEGIS_SUCCESS on success.
  */
-aegis_status_t aegis_hash_nodes(const uint8_t left[AEGIS_WORD_SIZE],
-                                const uint8_t right[AEGIS_WORD_SIZE],
+aegis_status_t aegis_hash_nodes(const uint8_t left[AEGIS_WORD_SIZE], const uint8_t right[AEGIS_WORD_SIZE],
                                 uint8_t out[AEGIS_WORD_SIZE]);
 
 /**
@@ -41,8 +40,7 @@ aegis_status_t aegis_hash_nodes(const uint8_t left[AEGIS_WORD_SIZE],
  * @param out 32-byte scalar output digest.
  * @return AEGIS_SUCCESS on success.
  */
-aegis_status_t aegis_poseidon_hash(const uint8_t left[AEGIS_WORD_SIZE],
-                                   const uint8_t right[AEGIS_WORD_SIZE],
+aegis_status_t aegis_poseidon_hash(const uint8_t left[AEGIS_WORD_SIZE], const uint8_t right[AEGIS_WORD_SIZE],
                                    uint8_t out[AEGIS_WORD_SIZE]);
 
 /**

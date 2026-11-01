@@ -8,20 +8,19 @@
 #include <string.h>
 
 static uint8_t get_key_bit(const uint8_t key[AEGIS_WORD_SIZE], uint32_t bit_idx) {
-    if (bit_idx >= 256) return 0;
+    if (bit_idx >= 256)
+        return 0;
     uint32_t byte_idx = bit_idx / 8;
     uint32_t bit_pos = 7 - (bit_idx % 8);
     return (key[byte_idx] >> bit_pos) & 1;
 }
 
-int aegis_precompile_eval(const uint8_t *input,
-                          size_t input_len,
-                          uint8_t *output,
-                          size_t max_output_len,
-                          size_t *actual_output_len,
-                          uint64_t *gas_cost) {
-    if (!output || !actual_output_len || !gas_cost) return -1;
-    if (max_output_len < AEGIS_WORD_SIZE) return -1;
+int aegis_precompile_eval(const uint8_t *input, size_t input_len, uint8_t *output, size_t max_output_len,
+                          size_t *actual_output_len, uint64_t *gas_cost) {
+    if (!output || !actual_output_len || !gas_cost)
+        return -1;
+    if (max_output_len < AEGIS_WORD_SIZE)
+        return -1;
 
     /* Base gas initialization */
     *gas_cost = AEGIS_PRECOMPILE_BASE_GAS;
@@ -37,10 +36,15 @@ int aegis_precompile_eval(const uint8_t *input,
     const uint8_t *key = input + 32;
     const uint8_t *value = input + 64;
 
+    /* Validate that upper 28 bytes of uint256 depth word are all zeroes */
+    for (size_t b = 96; b < 124; b++) {
+        if (input[b] != 0) {
+            return 0; /* Depth exceeds uint32 range -> reject as invalid */
+        }
+    }
+
     /* Extract 32-bit depth from 256-bit big-endian uint */
-    uint32_t depth = ((uint32_t)input[124] << 24) |
-                     ((uint32_t)input[125] << 16) |
-                     ((uint32_t)input[126] << 8)  |
+    uint32_t depth = ((uint32_t)input[124] << 24) | ((uint32_t)input[125] << 16) | ((uint32_t)input[126] << 8) |
                      ((uint32_t)input[127]);
 
     if (depth == 0 || depth > AEGIS_MAX_TREE_DEPTH) {
@@ -58,7 +62,8 @@ int aegis_precompile_eval(const uint8_t *input,
     /* Recompute leaf hash */
     uint8_t current[AEGIS_WORD_SIZE];
     aegis_status_t s = aegis_smt_leaf_hash(key, value, current);
-    if (s != AEGIS_SUCCESS) return 0;
+    if (s != AEGIS_SUCCESS)
+        return 0;
 
     /* Traverse siblings from leaf level up to root */
     for (int i = (int)depth - 1; i >= 0; i--) {

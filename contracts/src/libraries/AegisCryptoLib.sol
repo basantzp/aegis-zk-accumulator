@@ -52,12 +52,11 @@ library AegisCryptoLib {
      * @param siblings Sibling hashes along the path from root down to depth.
      * @return isValid True if the recomputed root matches the provided root.
      */
-    function verifyProofCalldata(
-        bytes32 root,
-        bytes32 key,
-        bytes32 value,
-        bytes32[] calldata siblings
-    ) internal pure returns (bool isValid) {
+    function verifyProofCalldata(bytes32 root, bytes32 key, bytes32 value, bytes32[] calldata siblings)
+        internal
+        pure
+        returns (bool isValid)
+    {
         uint256 depth = siblings.length;
         if (depth == 0 || depth > 256) {
             revert InvalidProofDepth(depth);
@@ -70,7 +69,7 @@ library AegisCryptoLib {
             let siblingsOffset := siblings.offset
 
             // Traverse from leaf level (depth - 1) up to root (0)
-            for { let i := sub(depth, 1) } 1 { } {
+            for { let i := sub(depth, 1) } 1 {} {
                 // Sibling at index i in calldata
                 let sibling := calldataload(add(siblingsOffset, mul(i, 0x20)))
 
@@ -109,11 +108,11 @@ library AegisCryptoLib {
      * @param siblings Array of sibling hashes.
      * @return computedRoot The reconstructed root.
      */
-    function calculateRoot(
-        bytes32 leafHash,
-        bytes32 key,
-        bytes32[] memory siblings
-    ) internal pure returns (bytes32 computedRoot) {
+    function calculateRoot(bytes32 leafHash, bytes32 key, bytes32[] memory siblings)
+        internal
+        pure
+        returns (bytes32 computedRoot)
+    {
         uint256 depth = siblings.length;
         if (depth == 0 || depth > 256) {
             revert InvalidProofDepth(depth);
@@ -125,7 +124,7 @@ library AegisCryptoLib {
             let keyWord := key
             let siblingsData := add(siblings, 0x20)
 
-            for { let i := sub(depth, 1) } 1 { } {
+            for { let i := sub(depth, 1) } 1 {} {
                 let sibling := mload(add(siblingsData, mul(i, 0x20)))
                 let shiftAmount := sub(255, i)
                 let bit := and(shr(shiftAmount, keyWord), 1)
@@ -152,11 +151,11 @@ library AegisCryptoLib {
         }
     }
 
-    function calculateRootCalldata(
-        bytes32 leafHash,
-        bytes32 key,
-        bytes32[] calldata siblings
-    ) internal pure returns (bytes32 computedRoot) {
+    function calculateRootCalldata(bytes32 leafHash, bytes32 key, bytes32[] calldata siblings)
+        internal
+        pure
+        returns (bytes32 computedRoot)
+    {
         uint256 depth = siblings.length;
         if (depth == 0 || depth > 256) {
             revert InvalidProofDepth(depth);
@@ -168,7 +167,7 @@ library AegisCryptoLib {
             let keyWord := key
             let siblingsOffset := siblings.offset
 
-            for { let i := sub(depth, 1) } 1 { } {
+            for { let i := sub(depth, 1) } 1 {} {
                 let sibling := calldataload(add(siblingsOffset, mul(i, 0x20)))
                 let shiftAmount := sub(255, i)
                 let bit := and(shr(shiftAmount, keyWord), 1)

@@ -14,8 +14,8 @@ contract AegisAccumulatorTest is Test {
 
     // Cross-verified test vector from core-c aegis-cli engine
     bytes32 public constant TEST_ROOT = 0xf1c8fc886a1b8973df719e3aa74a939e85449cdb6f45f2d8badd3af6ad2beaaf;
-    bytes32 public constant TEST_KEY  = 0x0000000000000000000000000000000000000000000000000000000000000042;
-    bytes32 public constant TEST_VAL  = 0x0000000000000000000000000000000000000000000000000000000000000099;
+    bytes32 public constant TEST_KEY = 0x0000000000000000000000000000000000000000000000000000000000000042;
+    bytes32 public constant TEST_VAL = 0x0000000000000000000000000000000000000000000000000000000000000099;
 
     bytes32[] internal testSiblings;
 
@@ -154,5 +154,47 @@ contract AegisAccumulatorTest is Test {
         vm.prank(sequencer);
         vm.expectRevert(AegisAccumulator.ContractPaused.selector);
         accumulator.updateRoot(TEST_ROOT, newRoot, emptyKeys, emptyValues, emptyProofs);
+    }
+
+    function test_Constructor_ZeroRootReverts() public {
+        vm.expectRevert(AegisAccumulator.InvalidRoot.selector);
+        new AegisAccumulator(bytes32(0), sequencer);
+    }
+
+    function test_Constructor_ZeroSequencerReverts() public {
+        vm.expectRevert(AegisAccumulator.ZeroAddress.selector);
+        new AegisAccumulator(TEST_ROOT, address(0));
+    }
+
+    function test_GetHistoricalRootAt_OutOfBoundsReverts() public {
+        vm.expectRevert(abi.encodeWithSelector(AegisAccumulator.IndexOutOfBounds.selector, 256, 256));
+        accumulator.getHistoricalRootAt(256);
+    }
+
+    function test_UpdateRoot_DimensionMismatch_EmptyKeysNonEmptyValues() public {
+        bytes32 newRoot = keccak256("new_root");
+        bytes32[] memory emptyKeys = new bytes32[](0);
+        bytes32[] memory nonEmptyValues = new bytes32[](1);
+        nonEmptyValues[0] = bytes32(uint256(1));
+        bytes32[][] memory emptyProofs = new bytes32[][](0);
+
+        vm.prank(sequencer);
+        vm.expectRevert(AegisAccumulator.InvalidBatchDimensions.selector);
+        accumulator.updateRoot(TEST_ROOT, newRoot, emptyKeys, nonEmptyValues, emptyProofs);
+    }
+
+    function test_VerifyProof_Depth256_FullTree() public view {
+        bytes32 key = bytes32(uint256(0x80) << 248 | 1);
+        bytes32 value = bytes32(uint256(0x1234));
+        bytes32[] memory siblings256 = new bytes32[](256);
+        for (uint256 i = 0; i < 256; i++) {
+            siblings256[i] = bytes32(i + 1);
+        }
+
+        bytes32 leafHash = AegisCryptoLib.computeLeafHash(key, value);
+        bytes32 computedRoot = AegisCryptoLib.calculateRoot(leafHash, key, siblings256);
+
+        bool valid = accumulator.verifyProof(computedRoot, key, value, siblings256);
+        assertTrue(valid, "Full 256-depth tree proof must verify");
     }
 }

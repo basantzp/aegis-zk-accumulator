@@ -15,10 +15,8 @@ contract DeployAegisScript is Script {
         address deployer = vm.addr(deployerPrivateKey);
         console.log("Deploying Aegis ZK Accumulator suite with deployer:", deployer);
 
-        bytes32 genesisRoot = vm.envOr(
-            "GENESIS_ROOT",
-            bytes32(0xf1c8fc886a1b8973df719e3aa74a939e85449cdb6f45f2d8badd3af6ad2beaaf)
-        );
+        bytes32 genesisRoot =
+            vm.envOr("GENESIS_ROOT", bytes32(0xf1c8fc886a1b8973df719e3aa74a939e85449cdb6f45f2d8badd3af6ad2beaaf));
 
         address sequencer = vm.envOr("SEQUENCER_ADDRESS", deployer);
 

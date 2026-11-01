@@ -44,6 +44,11 @@ clean:
 	rm -rf contracts/out contracts/cache
 	rm -rf apps/web/dist apps/web/node_modules/.vite
 
+fmt:
+	@echo "--> Formatting Solidity contracts and C source code..."
+	cd contracts && forge fmt
+	clang-format -i core-c/include/*.h core-c/src/*.c core-c/cli/*.c core-c/tests/*.c
+
 help:
 	@echo "Available Makefile targets:"
 	@echo "  all             Build C library, Solidity contracts, and Web client"

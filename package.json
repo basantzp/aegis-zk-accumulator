@@ -1,0 +1,32 @@
+{
+  "name": "aegis-zk-accumulator",
+  "version": "1.0.0",
+  "private": true,
+  "description": "High-Throughput Cryptographic State Accumulator & EVM Precompile Engine in C and Solidity",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm --prefix apps/web run build",
+    "dev": "npm --prefix apps/web run dev",
+    "preview": "npm --prefix apps/web run preview",
+    "test": "npm run test:c && npm run test:contracts",
+    "test:contracts": "cd contracts && forge test",
+    "test:c": "cd core-c && make test",
+    "bench:c": "cd core-c && make bench"
+  },
+  "keywords": [
+    "solidity",
+    "c",
+    "c11",
+    "merkle-tree",
+    "sparse-merkle-tree",
+    "zk-accumulator",
+    "precompile",
+    "evm",
+    "foundry",
+    "yul"
+  ],
+  "author": "basantzp <basantpok90@gmail.com>",
+  "license": "Apache-2.0 OR MIT"
+}

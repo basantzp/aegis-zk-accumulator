@@ -17,11 +17,20 @@ contract AegisVault is IAegisVault {
     /// @notice Vault administrator.
     address public owner;
 
+    /// @notice Pending owner for safe two-step ownership transfers.
+    address public pendingOwner;
+
     /// @notice Emergency pause flag.
     bool public paused;
 
     /// @notice Nullifier registry preventing replay attacks and double withdrawals.
     mapping(bytes32 => bool) public override isNullifierUsed;
+
+    /// @dev Events
+    event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner);
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+    event EmergencyDrained(address indexed recipient, uint256 amount);
+    event PausedStateChanged(bool isPaused);
 
     /// @dev Reentrancy lock status.
     uint256 private constant _NOT_ENTERED = 1;
@@ -79,13 +88,12 @@ contract AegisVault is IAegisVault {
     /**
      * @inheritdoc IAegisVault
      */
-    function withdraw(
-        bytes32 root,
-        bytes32 accountId,
-        uint256 amount,
-        bytes32 nullifier,
-        bytes32[] calldata proof
-    ) external override nonReentrant whenNotPaused {
+    function withdraw(bytes32 root, bytes32 accountId, uint256 amount, bytes32 nullifier, bytes32[] calldata proof)
+        external
+        override
+        nonReentrant
+        whenNotPaused
+    {
         if (amount == 0) revert ZeroAmount();
         if (isNullifierUsed[nullifier]) revert NullifierAlreadySpent(nullifier);
         if (!accumulator.isKnownRoot(root)) revert InvalidStateRoot(root);
@@ -105,18 +113,40 @@ contract AegisVault is IAegisVault {
         emit Withdrawn(msg.sender, accountId, amount, nullifier);
 
         // Interactions (Safe external native transfer)
-        (bool success, ) = msg.sender.call{value: amount}("");
+        (bool success,) = msg.sender.call{value: amount}("");
         if (!success) revert NativeTransferFailed();
     }
 
     /**
      * @notice Emergency administrative withdrawal during contract decommission.
      */
-    function emergencyDrain(address recipient, uint256 amount) external onlyOwner {
+    function emergencyDrain(address recipient, uint256 amount) external nonReentrant onlyOwner {
         if (recipient == address(0)) revert ZeroAddress();
         if (amount > address(this).balance) revert InsufficientLiquidity(amount, address(this).balance);
-        (bool success, ) = recipient.call{value: amount}("");
+        emit EmergencyDrained(recipient, amount);
+        (bool success,) = recipient.call{value: amount}("");
         if (!success) revert NativeTransferFailed();
+    }
+
+    /**
+     * @notice Transfer ownership (step 1 of 2).
+     */
+    function transferOwnership(address newOwner) external onlyOwner {
+        if (newOwner == address(0)) revert ZeroAddress();
+        pendingOwner = newOwner;
+        emit OwnershipTransferStarted(owner, newOwner);
+    }
+
+    /**
+     * @notice Accept ownership (step 2 of 2).
+     */
+    function acceptOwnership() external {
+        if (msg.sender != pendingOwner) revert Unauthorized();
+        address old = owner;
+        address newOwner = pendingOwner;
+        emit OwnershipTransferred(old, newOwner);
+        owner = newOwner;
+        pendingOwner = address(0);
     }
 
     /**
@@ -124,10 +154,12 @@ contract AegisVault is IAegisVault {
      */
     function setPaused(bool _paused) external onlyOwner {
         paused = _paused;
+        emit PausedStateChanged(_paused);
     }
 
     /// @notice Allow vault to accept plain ETH deposits.
-    receive() external payable {
+    receive() external payable whenNotPaused {
+        if (msg.value == 0) revert ZeroAmount();
         emit Deposited(msg.sender, bytes32(0), msg.value);
     }
 }
