@@ -2,7 +2,7 @@
 
 > **Repository**: [`basantzp/aegis-zk-accumulator`](https://github.com/basantzp/aegis-zk-accumulator)  
 > **Stack**: C11 Engine + Solidity 0.8.37 Contracts + EVM Precompile Shim  
-> **Last Verification Run**: `2026-11-02 01:39:39 +0545`  
+> **Last Verification Run**: `2026-11-02 05:39:39 +0545`  
 > **Verification Status**: 🟢 **34/34 Foundry Tests & C Engine ASan Green**  
 > **Author**: `basantzp <basantpok90@gmail.com>`
 
@@ -16,10 +16,10 @@
 
 ### Verification Summary
 ```text
-Suite result: ok. 16 passed; 0 failed; 0 skipped; finished in 13.37ms (1.96ms CPU time)
-Suite result: ok. 14 passed; 0 failed; 0 skipped; finished in 19.41ms (864.78µs CPU time)
-Suite result: ok. 4 passed; 0 failed; 0 skipped; finished in 22.13ms (77.55ms CPU time)
-Ran 3 test suites in 22.46ms (54.92ms CPU time): 34 tests passed, 0 failed, 0 skipped (34 total tests)
+Suite result: ok. 14 passed; 0 failed; 0 skipped; finished in 23.53ms (1.27ms CPU time)
+Suite result: ok. 4 passed; 0 failed; 0 skipped; finished in 23.53ms (84.56ms CPU time)
+Suite result: ok. 16 passed; 0 failed; 0 skipped; finished in 23.62ms (2.62ms CPU time)
+Ran 3 test suites in 23.93ms (70.68ms CPU time): 34 tests passed, 0 failed, 0 skipped (34 total tests)
 === ALL CRYPTO HASH TESTS PASSED ===
 === ALL SMT TESTS PASSED ===
 ```
