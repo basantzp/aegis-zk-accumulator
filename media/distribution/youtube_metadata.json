@@ -1,0 +1,19 @@
+{
+  "title": "How We Built a C11 + Solidity EVM Precompile ZK-Accumulator (Under The Hood)",
+  "short_title": "The EVM Precompile Bug That Almost Slipped Past CI 🤯 #shorts #ethereum",
+  "category": "Science & Technology (28)",
+  "description": "In this deep dive, we walk through the architecture of Aegis ZK-Accumulator: a high-performance Sparse Merkle Tree engine written in C11 paired with an EVM precompile shim and Solidity 0.8.37 accumulator contract.\n\nWe cover:\n00:00 - The EVM Gas Problem with Sparse Merkle Trees\n01:30 - C11 SMT-256 Bitwise Traversal & O(1) Zero Pruning\n03:15 - Precompile Calldata ABI Encoding (Address 0x09)\n05:00 - Post-Mortem: The uint256 Calldata Downcast Vulnerability\n07:20 - Solidity Vault & Accumulator Invariant Testing in Foundry\n09:10 - Live Benchmarks (0.42 μs vs 1,130 Gas)\n10:45 - Open Source Repo Walkthrough & CI Setup\n\nGitHub Repository: https://github.com/basantzp/aegis-zk-accumulator\nLicense: MIT\nLanguage Stats: 100% C & Solidity",
+  "tags": [
+    "Ethereum",
+    "Solidity",
+    "C11",
+    "EVM Precompile",
+    "Sparse Merkle Tree",
+    "Foundry",
+    "Smart Contract Audit",
+    "Blockchain Developer",
+    "Gas Optimization",
+    "Web3 Security"
+  ],
+  "pinned_comment": "Check out the full open-source repo with all 34 Foundry tests and C benchmarks here: https://github.com/basantzp/aegis-zk-accumulator Star the repo if you found the precompile breakdown useful!"
+}
